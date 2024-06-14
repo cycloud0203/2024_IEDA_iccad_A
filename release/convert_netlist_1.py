@@ -49,21 +49,12 @@ def write_file(file_path, content):
     with open(file_path, 'w') as file:
         file.write(content)
 
-def save_module_info(file_path, module_name, module_lines):
-    with open(file_path, 'w') as file:
-        file.write(f"module_name: {module_name}\n")
-        file.write("module_lines:\n")
-        for line in module_lines:
-            file.write(line + "\n")
-
-def extract_module_info(netlist):
-    module_lines = re.findall(r'(//module\s+top_\d+.*)', netlist)
-    current_module_line = re.findall(r'(module\s+top_\d+.*)', netlist)
-    if current_module_line:
-        module_lines.insert(0, current_module_line[0])
-        netlist = re.sub(r'(module\s+top_\d+.*)', '', netlist)
-    netlist = re.sub(r'(//module\s+top_\d+.*)', '', netlist)
-    return netlist, module_lines
+def extract_module_name(netlist):
+    match = re.search(r'module\s+(\w+)', netlist)
+    if match:
+        return match.group(1)
+    else:
+        raise ValueError("No module line found in the netlist.")
 
 def generate_verilog_module(module_name, inputs, outputs, wires, assigns):
     inputs_str = ', '.join(inputs)
@@ -82,31 +73,28 @@ endmodule
     return verilog_module
 
 # main
-input_netlist_path = os.path.join('netlists', 'design1.v')
-output_netlist_path = os.path.join('net_m', 'd1_m.v')
-module_info_path = os.path.join('net_m', 'module_info.txt')
+input_dir = 'netlists'
+output_dir = 'net_m'
+file_prefix = 'design'
 
-try:
-    netlist_content = read_file(input_netlist_path)
-    netlist_content, module_lines = extract_module_info(netlist_content)
-    
-    inputs, outputs, wires, assign_statements = convert_netlist_to_assigns(netlist_content)
-    
-    if module_lines:
-        module_name = re.findall(r'module\s+(\w+)', module_lines[0])[0]
-    else:
-        raise ValueError("No module line found in the netlist.")
-    
-    verilog_module = generate_verilog_module(module_name, inputs, outputs, wires, assign_statements)
-    
-    write_file(output_netlist_path, verilog_module)
-    save_module_info(module_info_path, module_name, module_lines)
-    
-    print(f"Converted netlist saved to: {output_netlist_path}")
-    print(f"Module info saved to: {module_info_path}")
-except FileNotFoundError as e:
-    print(f"Error: {e}")
-except IndexError as e:
-    print(f"Error: No module name found in the netlist. {e}")
-except ValueError as e:
-    print(f"Error: {e}")
+for i in range(1, 7):
+    input_netlist_path = os.path.join(input_dir, f'{file_prefix}{i}.v')
+    output_netlist_path = os.path.join(output_dir, f'd{i}_m.v')
+
+    try:
+        netlist_content = read_file(input_netlist_path)
+        module_name = extract_module_name(netlist_content)
+        
+        inputs, outputs, wires, assign_statements = convert_netlist_to_assigns(netlist_content)
+        
+        verilog_module = generate_verilog_module(module_name, inputs, outputs, wires, assign_statements)
+        
+        write_file(output_netlist_path, verilog_module)
+        
+        print(f"Converted netlist saved to: {output_netlist_path}")
+    except FileNotFoundError as e:
+        print(f"Error: {e}")
+    except IndexError as e:
+        print(f"Error: No module name found in the netlist. {e}")
+    except ValueError as e:
+        print(f"Error: {e}")
