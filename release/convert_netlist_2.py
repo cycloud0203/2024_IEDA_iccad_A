@@ -7,13 +7,13 @@ def write_verilog(filename, lines):
     with open(filename, 'w') as file:
         file.writelines(lines)
 
-def read_info(filename):
-    with open(filename, 'r') as file:
-        for line in file:
-            if line.startswith("module_name:"):
-                module_name = line.split("module_name:")[1].strip()
-                return module_name
-    return None
+#def read_info(filename):
+#    with open(filename, 'r') as file:
+#        for line in file:
+#            if line.startswith("module_name:"):
+#                module_name = line.split("module_name:")[1].strip()
+#                return module_name
+#    return None
 
 def convert_gate_line(line):
     # Extract the gate type and instance name
@@ -37,16 +37,16 @@ def convert_gate_line(line):
     return new_line
 
 def convert_verilog(lines):
-    info_filename = 'net_m/module_info_1.txt'
-    module_info = read_info(info_filename)
+    #info_filename = 'net_m/module_info_1.txt'
+    #module_info = read_info(info_filename)
     converted_lines = []
     
     for line in lines:
         if any(gate in line for gate in ['nand_4', 'not_3', 'nor_4', 'xnor_3']):
             converted_lines.append(convert_gate_line(line))
         else:
-            if "module" in line:
-                line = line.replace("module",f"module {module_info}")
+            #if "module" in line:
+                #line = line.replace("module",f"module {module_info}")
             converted_lines.append(line)
     
     return converted_lines
