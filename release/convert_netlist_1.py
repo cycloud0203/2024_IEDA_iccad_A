@@ -19,7 +19,7 @@ def generate_assign_statements(gates):
     for gate in gates:
         gate_type, signal_list = gate
         signals = [s.strip() for s in signal_list.split(',')]
-        output = signals.pop(0) 
+        output = signals.pop(0)
         if gate_type == 'and':
             assign_statements.append(f"assign {output} = {signals[0]} & {signals[1]};")
         elif gate_type == 'or':
@@ -49,14 +49,30 @@ def write_file(file_path, content):
     with open(file_path, 'w') as file:
         file.write(content)
 
-def generate_verilog_module(module_name, inputs, outputs, assigns):
+def save_module_info(file_path, module_name, module_lines):
+    with open(file_path, 'w') as file:
+        file.write(f"module_name: {module_name}\n")
+        file.write("module_lines:\n")
+        for line in module_lines:
+            file.write(line + "\n")
+
+def extract_module_info(netlist):
+    module_lines = re.findall(r'(//module\s+top_\d+.*)', netlist)
+    current_module_line = re.findall(r'(module\s+top_\d+.*)', netlist)
+    if current_module_line:
+        module_lines.insert(0, current_module_line[0])
+        netlist = re.sub(r'(module\s+top_\d+.*)', '', netlist)
+    netlist = re.sub(r'(//module\s+top_\d+.*)', '', netlist)
+    return netlist, module_lines
+
+def generate_verilog_module(module_name, inputs, outputs, wires, assigns):
     inputs_str = ', '.join(inputs)
     outputs_str = ', '.join(outputs)
     wires_str = ', '.join(wires)
     assigns_str = '\n'.join(assigns)
     
     verilog_module = f"""
-module ({inputs_str}, {outputs_str});
+module {module_name} ({inputs_str}, {outputs_str});
 input {inputs_str};
 output {outputs_str};
 wire {wires_str};
@@ -66,18 +82,31 @@ endmodule
     return verilog_module
 
 # main
-input_netlist_path = os.path.join('netlists', 'design5.v')
-output_netlist_path = os.path.join('net_m', 'd5_m.v')  
+input_netlist_path = os.path.join('netlists', 'design1.v')
+output_netlist_path = os.path.join('net_m', 'd1_m.v')
+module_info_path = os.path.join('net_m', 'module_info.txt')
 
 try:
     netlist_content = read_file(input_netlist_path)
+    netlist_content, module_lines = extract_module_info(netlist_content)
+    
     inputs, outputs, wires, assign_statements = convert_netlist_to_assigns(netlist_content)
     
-    module_name = re.findall(r'module\s+(\w+)', netlist_content)[0]
-    verilog_module = generate_verilog_module(module_name, inputs, outputs, assign_statements)
+    if module_lines:
+        module_name = re.findall(r'module\s+(\w+)', module_lines[0])[0]
+    else:
+        raise ValueError("No module line found in the netlist.")
+    
+    verilog_module = generate_verilog_module(module_name, inputs, outputs, wires, assign_statements)
     
     write_file(output_netlist_path, verilog_module)
+    save_module_info(module_info_path, module_name, module_lines)
     
     print(f"Converted netlist saved to: {output_netlist_path}")
+    print(f"Module info saved to: {module_info_path}")
 except FileNotFoundError as e:
+    print(f"Error: {e}")
+except IndexError as e:
+    print(f"Error: No module name found in the netlist. {e}")
+except ValueError as e:
     print(f"Error: {e}")
