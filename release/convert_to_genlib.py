@@ -36,15 +36,6 @@ with open('lib/lib1.genlib', 'w') as genlib_file:
 
         # Write the gate definition
         genlib_file.write(f"GATE {cell_name} {area} {function};\n")
+        genlib_file.write(f"    PIN * NONINV {input_load} 1 {rise_block_delay} {rise_fanout_delay} {fall_block_delay} {fall_fanout_delay}\n")
         
-        # Write the pins definition based on the cell type
-        if cell_type in ["not", "buf"]:
-            phase = "INV" if cell_type == "not" else "NONINV"
-            genlib_file.write(f"    PIN * {phase} {input_load} 1 {rise_block_delay} {rise_fanout_delay} {fall_block_delay} {fall_fanout_delay}\n")
-            #genlib_file.write(f"    PIN Y NONINV {input_load} 1 {rise_block_delay} {rise_fanout_delay} {fall_block_delay} {fall_fanout_delay}\n")
-        else:
-            genlib_file.write(f"    PIN * NONINV {input_load} 1 {rise_block_delay} {rise_fanout_delay} {fall_block_delay} {fall_fanout_delay}\n")
-            #genlib_file.write(f"    PIN B NONINV {input_load} 1 {rise_block_delay} {rise_fanout_delay} {fall_block_delay} {fall_fanout_delay}\n")
-            #genlib_file.write(f"    PIN Y NONINV {input_load} 1 {rise_block_delay} {rise_fanout_delay} {fall_block_delay} {fall_fanout_delay}\n")
-
 print("lib1.genlib generated...")

@@ -1,0 +1,30 @@
+read 2024_IEDA_iccad_A/release/net_m/d6_m.v
+strash
+
+balance
+rewrite
+rewrite -z
+resub
+refactor
+balance
+
+
+resyn2
+resyn3
+dc2
+
+
+compress2
+dch
+dc2
+
+ps
+
+
+read_library 2024_IEDA_iccad_A/release/lib/lib1.genlib
+
+map
+
+ps
+
+write_verilog 2024_IEDA_iccad_A/release/net_mapped/design6_mapped.v

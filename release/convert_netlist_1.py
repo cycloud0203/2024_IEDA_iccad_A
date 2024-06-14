@@ -34,6 +34,8 @@ def generate_assign_statements(gates):
             assign_statements.append(f"assign {output} = ~({signals[0]} | {signals[1]});")
         elif gate_type == 'nand':
             assign_statements.append(f"assign {output} = ~({signals[0]} & {signals[1]});")
+        elif gate_type == 'buf':
+            assign_statements.append(f"assign {output} = {signals[0]};")
     return assign_statements
 
 def convert_netlist_to_assigns(netlist):
