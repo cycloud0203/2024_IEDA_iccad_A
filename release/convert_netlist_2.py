@@ -29,10 +29,17 @@ def convert_gate_line(line):
     return new_line
 
 def convert_verilog(lines):
+    # Generate all possible gate names
+    gates = []
+    for gate in ['and', 'buf', 'nand', 'nor', 'not', 'or', 'xnor', 'xor']:
+        for i in range(1, 15):  # 14 is the maximum range based on buf and not gates
+            if (gate in ['buf', 'not'] and i <= 14) or (gate not in ['buf', 'not'] and i <= 8):
+                gates.append(f"{gate}_{i}")
+    
     converted_lines = []
     
     for line in lines:
-        if any(gate in line for gate in ['nand_4', 'not_3', 'nor_4', 'xnor_3']):
+        if any(gate in line for gate in gates):
             converted_lines.append(convert_gate_line(line))
         else:
             converted_lines.append(line)
@@ -40,8 +47,8 @@ def convert_verilog(lines):
     return converted_lines
 
 def main():
-    input_filename = 'net_mapped/design1_mapped.v'
-    output_filename = 'net_complete/converted_design1.v'
+    input_filename = 'net_mapped/design6_mapped.v'
+    output_filename = 'net_complete/converted_design6.v'
     
     lines = read_verilog(input_filename)
     converted_lines = convert_verilog(lines)
