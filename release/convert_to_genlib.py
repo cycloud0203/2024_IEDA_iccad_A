@@ -19,6 +19,7 @@ with open('lib/lib1.genlib', 'w') as genlib_file:
         rise_fanout_delay = cell_attributes[3]
         fall_fanout_delay = cell_attributes[4]
         input_load = cell_attributes[5]
+        max_load = cell_attributes[6]
 
         # Define the function based on the cell type
         if cell_type == "and":
@@ -42,6 +43,6 @@ with open('lib/lib1.genlib', 'w') as genlib_file:
 
         # Write the gate definition
         genlib_file.write(f"GATE {cell_name} {area} {function};\n")
-        genlib_file.write(f"    PIN * NONINV {input_load} 1 {rise_block_delay} {rise_fanout_delay} {fall_block_delay} {fall_fanout_delay}\n")
+        genlib_file.write(f"    PIN * NONINV {input_load} {max_load} {rise_block_delay} {rise_fanout_delay} {fall_block_delay} {fall_fanout_delay}\n")
         
 print("lib1.genlib generated...")
