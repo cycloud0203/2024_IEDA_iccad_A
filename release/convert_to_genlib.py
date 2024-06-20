@@ -3,16 +3,22 @@ import json
 with open('lib/lib1.json', 'r') as f:
     data = json.load(f)
 
+attributes = data['information']['attributes']
+
 with open('lib/lib1.genlib', 'w') as genlib_file:
     for cell in data['cells']:
         cell_name = cell['cell_name']
         cell_type = cell['cell_type']
-        area = cell['data_1_f']
-        rise_block_delay = cell['data_2_f']
-        fall_block_delay = cell['data_4_f']
-        rise_fanout_delay = cell['data_5_f']
-        fall_fanout_delay = cell['data_6_f']
-        input_load = cell['data_7_f']
+
+
+        cell_attributes = [cell[attr] for attr in attributes if attr not in ['cell_name', 'cell_type']]
+        
+        area = cell_attributes[0]
+        rise_block_delay = cell_attributes[1]
+        fall_block_delay = cell_attributes[2]
+        rise_fanout_delay = cell_attributes[3]
+        fall_fanout_delay = cell_attributes[4]
+        input_load = cell_attributes[5]
 
         # Define the function based on the cell type
         if cell_type == "and":
