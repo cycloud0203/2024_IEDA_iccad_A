@@ -1,3 +1,5 @@
+import sys
+
 def read_verilog(filename):
     with open(filename, 'r') as file:
         lines = file.readlines()
@@ -46,14 +48,13 @@ def convert_verilog(lines):
     
     return converted_lines
 
-def main():
-    input_filename = 'net_mapped/design6_mapped.v'
-    output_filename = 'net_complete/converted_design6.v'
-    
+def main(input_filename, output_filename):
     lines = read_verilog(input_filename)
     converted_lines = convert_verilog(lines)
     write_verilog(output_filename, converted_lines)
     print(f'Converted Verilog file saved as {output_filename}')
 
 if __name__ == "__main__":
-    main()
+    input_filename = sys.argv[1]
+    output_filename = sys.argv[2]
+    main(input_filename, output_filename)
