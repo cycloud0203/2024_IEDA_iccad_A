@@ -1,5 +1,6 @@
 import re
 import os
+import sys
 
 def parse_netlist(netlist):
     inputs = re.findall(r'input\s+([\w\s,]+);', netlist)
@@ -74,29 +75,29 @@ endmodule
 """
     return verilog_module
 
-# main
-input_dir = 'netlists'
-output_dir = 'net_m'
-file_prefix = 'design'
-
-for i in range(1, 7):
-    input_netlist_path = os.path.join(input_dir, f'{file_prefix}{i}.v')
-    output_netlist_path = os.path.join(output_dir, f'd{i}_m.v')
-
+def main(input_filename, output_filename):
     try:
-        netlist_content = read_file(input_netlist_path)
+        netlist_content = read_file(input_filename)
         module_name = extract_module_name(netlist_content)
         
         inputs, outputs, wires, assign_statements = convert_netlist_to_assigns(netlist_content)
         
         verilog_module = generate_verilog_module(module_name, inputs, outputs, wires, assign_statements)
         
-        write_file(output_netlist_path, verilog_module)
+        write_file(output_filename, verilog_module)
         
-        print(f"Converted netlist saved to: {output_netlist_path}")
+        print(f"Converted netlist saved to: {output_filename}")
     except FileNotFoundError as e:
         print(f"Error: {e}")
     except IndexError as e:
         print(f"Error: No module name found in the netlist. {e}")
     except ValueError as e:
         print(f"Error: {e}")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: python convert_netlist_1.py <input_netlist_path> <output_netlist_path>")
+    else:
+        input_filename = sys.argv[1]
+        output_filename = sys.argv[2]
+        main(input_filename, output_filename)

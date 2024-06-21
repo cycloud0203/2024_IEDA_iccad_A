@@ -3,6 +3,15 @@ import random
 import subprocess
 import os
 
+def convert_netlist_for_input(original_netlist):
+    output_filename = 'net_m/design_m.v'
+    convert_command = f'python3 convert_netlist_1.py {original_netlist} {output_filename}'
+    result = subprocess.run(convert_command, shell=True)
+    if result.returncode != 0:
+        print("Error running convert_netlist_1.py")
+        return None
+    return output_filename
+
 def generate_random_genlib(data):
     attributes = data['information']['attributes']
     num_attributes = len(attributes)
@@ -97,7 +106,7 @@ def run_abc_script(script_filename):
         return False
     return True
 
-def convert_to_netlist(mapped_netlist):
+def convert_netlist_for_outout(mapped_netlist):
     output_filename = 'net_complete/converted_design.v'
     convert_command = f'python3 convert_netlist_2.py {mapped_netlist} {output_filename}'
     result = subprocess.run(convert_command, shell=True)
@@ -135,7 +144,7 @@ def main():
             print(f"Skipping iteration {iteration + 1} due to abc script error")
             continue
 
-        converted_netlist = convert_to_netlist(mapped_netlist)
+        converted_netlist = convert_netlist_for_outout(mapped_netlist)
         if not converted_netlist:
             print(f"Skipping iteration {iteration + 1} due to conversion error")
             continue

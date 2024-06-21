@@ -1,1 +1,14 @@
 source -s abc.rc
+read net_m/d1_m.v
+strash
+rewrite
+rewrite 0z
+rewrite -z
+resub
+refactor
+resyn2
+resyn
+resyn3
+balance
+compress
+fraig
