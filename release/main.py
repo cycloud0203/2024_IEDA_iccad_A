@@ -3,6 +3,7 @@ import random
 import subprocess
 import os
 
+
 def convert_netlist_for_input(original_netlist):
     output_filename = 'net_m/design_m.v'
     convert_command = f'python3 convert_netlist_1.py {original_netlist} {output_filename}'
@@ -66,8 +67,9 @@ def generate_random_genlib(data):
 
     return genlib_filename
 
-def create_abc_script(genlib_filename):
-    netlist_input = 'net_m/d1_m.v'
+def create_abc_script(inputfile, genlib_filename):
+    #netlist_input = 'net_m/d1_m.v'
+    netlist_input = inputfile
     netlist_output = 'net_mapped/netlist_mapped.v'
     abc_script = f"""
     read {netlist_input}
@@ -134,13 +136,22 @@ def main():
     num_iterations = 10
     best_cost = float('inf')
     best_netlist = 'net_complete/converted_design.v'  # 預設最佳 netlist 文件名稱
+    
+    #==need to modify=======
+    original_netlist = f'netlists/design1.v'
+    #=======================
+    
+    #convert netlist to abc readable format
+    
+    converted_netlist_abc = convert_netlist_for_input(original_netlist)
+    
 
     for iteration in range(num_iterations):
         print(f"Iteration {iteration + 1}")
         genlib_filename = generate_random_genlib(data)
         script_filename, mapped_netlist = create_abc_script(genlib_filename)
         
-        if not run_abc_script(script_filename):
+        if not run_abc_script(converted_netlist_abc, script_filename):
             print(f"Skipping iteration {iteration + 1} due to abc script error")
             continue
 
