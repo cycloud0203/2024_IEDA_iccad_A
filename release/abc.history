@@ -12,3 +12,4 @@ resyn3
 balance
 compress
 fraig
+source -s abc.rc
