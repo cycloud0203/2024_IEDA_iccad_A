@@ -7,6 +7,8 @@ import itertools
 import signal
 import time
 
+used_combinations = set()
+
 # Define a timeout handler
 def timeout_handler(signum, frame):
     raise TimeoutError("The operation timed out")
@@ -48,19 +50,20 @@ def generate_random_genlib(data, iteration):
             while len(cell_attributes) < num_required_attributes:
                 cell_attributes.append(1.0)
 
-            # Generate permutations and select the one corresponding to the current iteration
-            all_permutations = list(itertools.permutations(cell_attributes))
-            chosen_permutation = all_permutations[iteration % len(all_permutations)]
+            while True:
+                random.shuffle(cell_attributes)
+                combination_tuple = tuple(cell_attributes)
+                if combination_tuple not in used_combinations:
+                    used_combinations.add(combination_tuple)
+                    break
 
-            #random.shuffle(cell_attributes)
-
-            area = chosen_permutation[0]
-            rise_block_delay = chosen_permutation[1]
-            fall_block_delay = chosen_permutation[2]
-            rise_fanout_delay = chosen_permutation[3]
-            fall_fanout_delay = chosen_permutation[4]
-            input_load = chosen_permutation[5]
-            max_load = chosen_permutation[6]
+            area = cell_attributes[0]
+            rise_block_delay = cell_attributes[1]
+            fall_block_delay = cell_attributes[2]
+            rise_fanout_delay = cell_attributes[3]
+            fall_fanout_delay = cell_attributes[4]
+            input_load = cell_attributes[5]
+            max_load = cell_attributes[6]
 
 
             if cell_type == "and":
@@ -176,7 +179,8 @@ def main():
         with open(args.library, 'r') as f:
             data = json.load(f)
 
-        num_iterations = 3000
+        num_iterations = 1000
+        
         best_cost = float('inf')
         best_netlist = args.output
         best_genlib = 'best_genlib.genlib'
