@@ -84,8 +84,8 @@ THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, B
 For detailed information on CAD contest Problem A, refer to the official PDF document:
 CAD Contest Problem A <!-- Replace with actual link -->
 
-## Note
-- Ensure that the `cada0036` file has executable permissions. If not, use the following command to add the permissions:
+> [!NOTE]
+> Ensure that the `cada0036` file has executable permissions. If not, use the following command to add the permissions:
 ```bash
 chmod +x cada0036
 ```
