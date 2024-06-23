@@ -48,7 +48,7 @@ def main(input_filename, output_filename):
     lines = read_verilog(input_filename)
     converted_lines = convert_verilog(lines)
     write_verilog(output_filename, converted_lines)
-    print(f'Converted Verilog file saved as {output_filename}')
+    #print(f'Converted Verilog file saved as {output_filename}')
 
 if __name__ == "__main__":
     input_filename = sys.argv[1]
