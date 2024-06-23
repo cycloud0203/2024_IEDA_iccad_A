@@ -3,6 +3,7 @@ import random
 import subprocess
 import os
 import argparse
+import itertools
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='CAD Contest Optimizer')
@@ -21,12 +22,12 @@ def convert_netlist_to_abc_format(original_netlist):
         return None
     return output_filename
 
-def generate_random_genlib(data):
+def generate_random_genlib(data, iteration):
     attributes = data['information']['attributes']
     num_attributes = len(attributes)
     num_required_attributes = 7
 
-    genlib_filename = 'release/genlib/lib1.genlib'
+    genlib_filename = 'release/genlib/lib.genlib'
 
     with open(genlib_filename, 'w') as genlib_file:
         for cell in data['cells']:
@@ -38,6 +39,9 @@ def generate_random_genlib(data):
             while len(cell_attributes) < num_required_attributes:
                 cell_attributes.append(1.0)
 
+            # Generate permutations and select the one corresponding to the current iteration
+            all_permutations = list(itertools.permutations(cell_attributes))
+            chosen_permutation = all_permutations[iteration % len(all_permutations)]
 
             random.shuffle(cell_attributes)
 
@@ -88,6 +92,10 @@ def create_abc_script(inputfile, genlib_filename):
     resub
     refactor
     balance
+    fraig
+    compress
+    b
+    resyn
     resyn2
     resyn3
     dc2
@@ -124,8 +132,8 @@ def convert_netlist_to_output_format(mapped_netlist):
         return None
     return output_filename
 
-def estimate_cost(netlist_filename, library_path, cost_function, iteration):
-    cost_output_filename = f'release/cf2_ex1_{iteration}.out'
+def estimate_cost(netlist_filename, library_path, cost_function):
+    cost_output_filename = f'release/cost.txt'
     cost_command = f'{cost_function} -library {library_path} -netlist {netlist_filename} -output {cost_output_filename}'
     result = subprocess.run(cost_command, shell=True)
     if result.returncode != 0:
@@ -134,8 +142,16 @@ def estimate_cost(netlist_filename, library_path, cost_function, iteration):
 
     cost_output_path = cost_output_filename
     with open(cost_output_path, 'r') as file:
-        cost = float(file.read().strip()) 
+        output_line = file.readline().strip()  # 假设输出文件只有一行
+        if "cost = " in output_line:
+            cost_str = output_line.split('=')[1].strip()
+            cost = float(cost_str)
+        else:
+            print("Unexpected output format in cost file")
+            return None
+
     return cost
+
 
 def main():
     args = parse_arguments()
@@ -143,7 +159,7 @@ def main():
     with open(args.library, 'r') as f:
         data = json.load(f)
 
-    num_iterations = 10
+    num_iterations = 1000
     best_cost = float('inf')
     best_netlist = args.output 
 
@@ -154,7 +170,7 @@ def main():
 
     for iteration in range(num_iterations):
         print(f"Iteration {iteration + 1}")
-        genlib_filename = generate_random_genlib(data)
+        genlib_filename = generate_random_genlib(data, iteration)
         script_filename, mapped_netlist = create_abc_script(converted_netlist_abc, genlib_filename)
 
         if not run_abc_script(script_filename):
@@ -166,7 +182,7 @@ def main():
             print(f"Skipping iteration {iteration + 1} due to conversion error")
             continue
 
-        current_cost = estimate_cost(converted_netlist, args.library, args.cost_function, iteration)
+        current_cost = estimate_cost(converted_netlist, args.library, args.cost_function)
         if current_cost is None:
             print(f"Skipping iteration {iteration + 1} due to cost estimation error")
             continue
@@ -176,9 +192,11 @@ def main():
         if current_cost < best_cost:
             best_cost = current_cost
             os.rename(converted_netlist, best_netlist)
-            print(f"New best netlist found: {best_netlist} with cost {best_cost}")
+            best_genlib = genlib_filename
+            print(f"\033[91mNew best netlist found: {best_netlist} with cost {best_cost} and genlib {best_genlib}\033[0m")
 
-    print(f"Best netlist saved as {best_netlist} with cost {best_cost}")
+    print(f"\033[92mBest netlist saved as {best_netlist} with cost {best_cost}\033[0m")
+    
 
 if __name__ == "__main__":
     main()

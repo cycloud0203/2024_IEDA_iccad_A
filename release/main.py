@@ -26,19 +26,19 @@ def generate_random_genlib(data):
     num_attributes = len(attributes)
     num_required_attributes = 7
 
-    genlib_filename = 'release/lib1.genlib'
+    genlib_filename = 'release/genlib/lib1.genlib'
 
     with open(genlib_filename, 'w') as genlib_file:
         for cell in data['cells']:
             cell_name = cell['cell_name']
             cell_type = cell['cell_type']
 
-            # 获取属性值，如果不满7个则以1补足
+
             cell_attributes = [float(cell[attr]) for attr in attributes if attr not in ['cell_name', 'cell_type']]
             while len(cell_attributes) < num_required_attributes:
                 cell_attributes.append(1.0)
 
-            # 随机打乱属性值
+
             random.shuffle(cell_attributes)
 
             area = cell_attributes[0]
@@ -49,7 +49,7 @@ def generate_random_genlib(data):
             input_load = cell_attributes[5]
             max_load = cell_attributes[6]
 
-            # 定义根据 cell type 的函数
+
             if cell_type == "and":
                 function = "Y=A*B"
             elif cell_type == "or":
@@ -69,7 +69,7 @@ def generate_random_genlib(data):
             else:
                 continue
 
-            # 输出 gate 定义
+
             genlib_file.write(f"GATE {cell_name} {area} {function};\n")
             genlib_file.write(f"    PIN * NONINV {input_load} {max_load} {rise_block_delay} {rise_fanout_delay} {fall_block_delay} {fall_fanout_delay}\n")
 
@@ -103,15 +103,17 @@ def create_abc_script(inputfile, genlib_filename):
     script_filename = 'release/optimize.abc'
     with open(script_filename, 'w') as file:
         file.write(abc_script)
+    print(f"{script_filename} generated...")
     return script_filename, netlist_output
 
 def run_abc_script(script_filename):
-    abc_command = f'./abc -f {script_filename}'
-    result = subprocess.run(abc_command, shell=True, cwd='abc')
+    abc_command = f'./abc/abc -f {script_filename}'
+    result = subprocess.run(abc_command, shell=True, cwd='.')
     if result.returncode != 0:
         print("Error running abc script")
         return False
     return True
+
 
 def convert_netlist_to_output_format(mapped_netlist):
     output_filename = 'release/net_complete/converted_design.v'
@@ -132,7 +134,7 @@ def estimate_cost(netlist_filename, library_path, cost_function, iteration):
 
     cost_output_path = cost_output_filename
     with open(cost_output_path, 'r') as file:
-        cost = float(file.read().strip())  # 假设成本结果是单行浮点数
+        cost = float(file.read().strip()) 
     return cost
 
 def main():
@@ -143,7 +145,7 @@ def main():
 
     num_iterations = 10
     best_cost = float('inf')
-    best_netlist = args.output  # 预设最佳 netlist 文件名称
+    best_netlist = args.output 
 
     converted_netlist_abc = convert_netlist_to_abc_format(args.netlist)
     if not converted_netlist_abc:

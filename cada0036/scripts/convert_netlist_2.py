@@ -21,12 +21,8 @@ def convert_gate_line(line):
     connections = connections.replace('.A(', '').replace('.B(', '').replace('.Y(', '').replace(')', '')
     signals = [signal.strip() for signal in connections.split(',')]
     
-    # Move the output signal to the first position
-    output_signal = signals[-1]
-    input_signals = signals[:-1]
-    
     # Reconstruct the line in the desired format
-    new_line = f"{gate_info}({output_signal}, {', '.join(input_signals)});\n"
+    new_line = f"{gate_info}({', '.join(signals)});\n"
     
     return new_line
 
