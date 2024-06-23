@@ -1,0 +1,3 @@
+source -s abc.rc
+read release/net_m/design_m.v
+strash

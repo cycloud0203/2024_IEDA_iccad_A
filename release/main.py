@@ -2,11 +2,19 @@ import json
 import random
 import subprocess
 import os
+import argparse
 
+def parse_arguments():
+    parser = argparse.ArgumentParser(description='CAD Contest Optimizer')
+    parser.add_argument('-netlist', required=True, help='Path to the netlist file (design.v)')
+    parser.add_argument('-library', required=True, help='Path to the library file (lib.json)')
+    parser.add_argument('-cost_function', required=True, help='Path to the cost function executable')
+    parser.add_argument('-output', required=True, help='Path to the output file (optimized_design.v)')
+    return parser.parse_args()
 
-def convert_netlist_for_input(original_netlist):
-    output_filename = 'net_m/design_m.v'
-    convert_command = f'python3 convert_netlist_1.py {original_netlist} {output_filename}'
+def convert_netlist_to_abc_format(original_netlist):
+    output_filename = 'release/net_m/design_m.v'
+    convert_command = f'python3 scripts/convert_netlist_1.py {original_netlist} {output_filename}'
     result = subprocess.run(convert_command, shell=True)
     if result.returncode != 0:
         print("Error running convert_netlist_1.py")
@@ -18,19 +26,19 @@ def generate_random_genlib(data):
     num_attributes = len(attributes)
     num_required_attributes = 7
 
-    genlib_filename = 'lib/lib1.genlib'
+    genlib_filename = 'release/lib1.genlib'
 
     with open(genlib_filename, 'w') as genlib_file:
         for cell in data['cells']:
             cell_name = cell['cell_name']
             cell_type = cell['cell_type']
 
-            # 獲取屬性值，如果不滿7個則以1補足
+            # 获取属性值，如果不满7个则以1补足
             cell_attributes = [float(cell[attr]) for attr in attributes if attr not in ['cell_name', 'cell_type']]
             while len(cell_attributes) < num_required_attributes:
                 cell_attributes.append(1.0)
 
-            # 隨機打亂屬性值
+            # 随机打乱属性值
             random.shuffle(cell_attributes)
 
             area = cell_attributes[0]
@@ -41,7 +49,7 @@ def generate_random_genlib(data):
             input_load = cell_attributes[5]
             max_load = cell_attributes[6]
 
-            # 定義根據 cell type 的函數
+            # 定义根据 cell type 的函数
             if cell_type == "and":
                 function = "Y=A*B"
             elif cell_type == "or":
@@ -61,16 +69,15 @@ def generate_random_genlib(data):
             else:
                 continue
 
-            # 輸出 gate 定義
+            # 输出 gate 定义
             genlib_file.write(f"GATE {cell_name} {area} {function};\n")
             genlib_file.write(f"    PIN * NONINV {input_load} {max_load} {rise_block_delay} {rise_fanout_delay} {fall_block_delay} {fall_fanout_delay}\n")
 
     return genlib_filename
 
 def create_abc_script(inputfile, genlib_filename):
-    #netlist_input = 'net_m/d1_m.v'
     netlist_input = inputfile
-    netlist_output = 'net_mapped/netlist_mapped.v'
+    netlist_output = 'release/net_mapped/netlist_mapped.v'
     abc_script = f"""
     read {netlist_input}
     strash
@@ -93,74 +100,71 @@ def create_abc_script(inputfile, genlib_filename):
     ps
     write_verilog {netlist_output}
     """
-    script_filename = 'optimize.abc'
+    script_filename = 'release/optimize.abc'
     with open(script_filename, 'w') as file:
         file.write(abc_script)
     return script_filename, netlist_output
 
 def run_abc_script(script_filename):
-    print("read %s" % script_filename)
     abc_command = f'./abc -f {script_filename}'
-    print("running %s" % abc_command)
-    result = subprocess.run(abc_command, shell=True)
+    result = subprocess.run(abc_command, shell=True, cwd='abc')
     if result.returncode != 0:
         print("Error running abc script")
         return False
     return True
 
-def convert_netlist_for_outout(mapped_netlist):
-    output_filename = 'net_complete/converted_design.v'
-    convert_command = f'python3 convert_netlist_2.py {mapped_netlist} {output_filename}'
+def convert_netlist_to_output_format(mapped_netlist):
+    output_filename = 'release/net_complete/converted_design.v'
+    convert_command = f'python3 scripts/convert_netlist_2.py {mapped_netlist} {output_filename}'
     result = subprocess.run(convert_command, shell=True)
     if result.returncode != 0:
         print("Error running convert_netlist_2.py")
         return None
     return output_filename
 
-def estimate_cost(netlist_filename, iteration):
-    cost_output_filename = f'cf2_ex1_{iteration}.out'
-    cost_command = f'./cost_estimators/cost_estimator_1 -library lib/lib1.json -netlist {netlist_filename} -output {cost_output_filename}'
+def estimate_cost(netlist_filename, library_path, cost_function, iteration):
+    cost_output_filename = f'release/cf2_ex1_{iteration}.out'
+    cost_command = f'{cost_function} -library {library_path} -netlist {netlist_filename} -output {cost_output_filename}'
     result = subprocess.run(cost_command, shell=True)
     if result.returncode != 0:
         print("Error running cost estimator")
         return None
 
-    with open(cost_output_filename, 'r') as file:
-        cost = float(file.read().strip())  # 假設成本結果是單行浮點數
+    cost_output_path = cost_output_filename
+    with open(cost_output_path, 'r') as file:
+        cost = float(file.read().strip())  # 假设成本结果是单行浮点数
     return cost
 
 def main():
-    with open('lib/lib1.json', 'r') as f:
+    args = parse_arguments()
+
+    with open(args.library, 'r') as f:
         data = json.load(f)
 
     num_iterations = 10
     best_cost = float('inf')
-    best_netlist = 'net_complete/converted_design.v'  # 預設最佳 netlist 文件名稱
-    
-    #==need to modify=======
-    original_netlist = f'netlists/design1.v'
-    #=======================
-    
-    #convert netlist to abc readable format
-    
-    converted_netlist_abc = convert_netlist_for_input(original_netlist)
-    
+    best_netlist = args.output  # 预设最佳 netlist 文件名称
+
+    converted_netlist_abc = convert_netlist_to_abc_format(args.netlist)
+    if not converted_netlist_abc:
+        print("Failed to convert netlist to ABC format")
+        return
 
     for iteration in range(num_iterations):
         print(f"Iteration {iteration + 1}")
         genlib_filename = generate_random_genlib(data)
-        script_filename, mapped_netlist = create_abc_script(genlib_filename)
-        
-        if not run_abc_script(converted_netlist_abc, script_filename):
+        script_filename, mapped_netlist = create_abc_script(converted_netlist_abc, genlib_filename)
+
+        if not run_abc_script(script_filename):
             print(f"Skipping iteration {iteration + 1} due to abc script error")
             continue
 
-        converted_netlist = convert_netlist_for_outout(mapped_netlist)
+        converted_netlist = convert_netlist_to_output_format(mapped_netlist)
         if not converted_netlist:
             print(f"Skipping iteration {iteration + 1} due to conversion error")
             continue
 
-        current_cost = estimate_cost(converted_netlist, iteration)
+        current_cost = estimate_cost(converted_netlist, args.library, args.cost_function, iteration)
         if current_cost is None:
             print(f"Skipping iteration {iteration + 1} due to cost estimation error")
             continue
