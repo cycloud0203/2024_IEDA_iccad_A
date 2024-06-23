@@ -21,14 +21,14 @@ cada0036/
 │   ├── net_mapped
 └── cada0036                 # Main executable file
 ```
-> [!WARNING]
-> The program is only executable on the amd64 Linux environment.
 
 ## Building
 There is no need to compile any file, but only need to execute the following command under the `cada0036` folder: 
 ```
 ./cada0036 -netlist <netlist_path/name.v> -library <lib_path/name.lib> -cost_function <cost_function_path/name> -output <output_path/name.v>
 ```
+> [!WARNING]
+> The program is only executable on the amd64 Linux environment.
 
 ## Reference
 
