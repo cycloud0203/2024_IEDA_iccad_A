@@ -6,13 +6,14 @@ import argparse
 import itertools
 import signal
 import time
+import math
 
 # Define a timeout handler
 def timeout_handler(signum, frame):
     raise TimeoutError("The operation timed out")
 
 # Set the timeout limit (in seconds)
-TIMEOUT = 9000  # Set to 2.5 hours (9000 seconds)
+TIMEOUT = 10800  # Set to 3 hours (10800 seconds)
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='CAD Contest Optimizer')
@@ -31,9 +32,8 @@ def convert_netlist_to_abc_format(original_netlist):
         return None
     return output_filename
 
-def generate_random_genlib(data, iteration):
+def generate_genlib(data, parameters):
     attributes = data['information']['attributes']
-    num_attributes = len(attributes)
     num_required_attributes = 7
 
     genlib_filename = 'release/genlib/lib.genlib'
@@ -43,16 +43,12 @@ def generate_random_genlib(data, iteration):
             cell_name = cell['cell_name']
             cell_type = cell['cell_type']
 
-
             cell_attributes = [float(cell[attr]) for attr in attributes if attr not in ['cell_name', 'cell_type']]
             while len(cell_attributes) < num_required_attributes:
                 cell_attributes.append(1.0)
 
-            # Generate permutations and select the one corresponding to the current iteration
-            all_permutations = list(itertools.permutations(cell_attributes))
-            chosen_permutation = all_permutations[iteration % len(all_permutations)]
-
-            random.shuffle(cell_attributes)
+            for i in range(len(cell_attributes)):
+                cell_attributes[i] *= parameters[i]
 
             area = cell_attributes[0]
             rise_block_delay = cell_attributes[1]
@@ -61,7 +57,6 @@ def generate_random_genlib(data, iteration):
             fall_fanout_delay = cell_attributes[4]
             input_load = cell_attributes[5]
             max_load = cell_attributes[6]
-
 
             if cell_type == "and":
                 function = "Y=A*B"
@@ -81,7 +76,6 @@ def generate_random_genlib(data, iteration):
                 function = "Y=!(A^B)"
             else:
                 continue
-
 
             genlib_file.write(f"GATE {cell_name} {area} {function};\n")
             genlib_file.write(f"    PIN * NONINV {input_load} {max_load} {rise_block_delay} {rise_fanout_delay} {fall_block_delay} {fall_fanout_delay}\n")
@@ -120,7 +114,6 @@ def create_abc_script(inputfile, genlib_filename):
     script_filename = 'release/optimize.abc'
     with open(script_filename, 'w') as file:
         file.write(abc_script)
-    #print(f"{script_filename} generated...")
     return script_filename, netlist_output
 
 def run_abc_script(script_filename):
@@ -130,7 +123,6 @@ def run_abc_script(script_filename):
         print("Error running abc script")
         return False
     return True
-
 
 def convert_netlist_to_output_format(mapped_netlist):
     output_filename = 'release/net_complete/converted_design.v'
@@ -142,7 +134,7 @@ def convert_netlist_to_output_format(mapped_netlist):
     return output_filename
 
 def estimate_cost(netlist_filename, library_path, cost_function):
-    cost_output_filename = f'release/cost.txt'
+    cost_output_filename = 'release/cost.txt'
     cost_command = f'{cost_function} -library {library_path} -netlist {netlist_filename} -output {cost_output_filename}'
     result = subprocess.run(cost_command, shell=True)
     if result.returncode != 0:
@@ -161,6 +153,50 @@ def estimate_cost(netlist_filename, library_path, cost_function):
 
     return cost
 
+def simulated_annealing_optimization(data, args, initial_temperature=1000, cooling_rate=0.99, num_iterations=1000):
+    current_solution = [1.0] * 7  # 初始参数设置为1
+    current_cost = float('inf')
+    best_solution = current_solution
+    best_cost = current_cost
+    temperature = initial_temperature
+
+    converted_netlist_abc = convert_netlist_to_abc_format(args.netlist)
+    if not converted_netlist_abc:
+        print("Failed to convert netlist to ABC format")
+        return None, None
+
+    for iteration in range(num_iterations):
+        print(f"Iteration {iteration + 1}")
+        new_solution = [param * random.uniform(0.8, 1.2) for param in current_solution]
+        genlib_filename = generate_genlib(data, new_solution)
+        script_filename, mapped_netlist = create_abc_script(converted_netlist_abc, genlib_filename)
+
+        if not run_abc_script(script_filename):
+            print(f"Skipping iteration {iteration + 1} due to abc script error")
+            continue
+
+        converted_netlist = convert_netlist_to_output_format(mapped_netlist)
+        if not converted_netlist:
+            print(f"Skipping iteration {iteration + 1} due to conversion error")
+            continue
+
+        new_cost = estimate_cost(converted_netlist, args.library, args.cost_function)
+        if new_cost is None:
+            print(f"Skipping iteration {iteration + 1} due to cost estimation error")
+            continue
+
+        if new_cost < current_cost or random.uniform(0, 1) < math.exp((current_cost - new_cost) / temperature):
+            current_solution = new_solution
+            current_cost = new_cost
+
+            if new_cost < best_cost:
+                best_solution = new_solution
+                best_cost = new_cost
+                print(f"\033[91mNew best netlist found with cost {best_cost}\033[0m")
+
+        temperature *= cooling_rate
+
+    return best_solution, best_cost
 
 def main():
     # Record the start time
@@ -176,42 +212,16 @@ def main():
         with open(args.library, 'r') as f:
             data = json.load(f)
 
-        num_iterations = 3000
-        best_cost = float('inf')
+        best_solution, best_cost = simulated_annealing_optimization(data, args)
+        
+        if best_solution is None or best_cost is None:
+            print("Optimization failed")
+            return
+        
+        # Save the best solution
         best_netlist = args.output
         best_genlib = 'best_genlib.genlib'
-
-        converted_netlist_abc = convert_netlist_to_abc_format(args.netlist)
-        if not converted_netlist_abc:
-            print("Failed to convert netlist to ABC format")
-            return
-
-        for iteration in range(num_iterations):
-            print(f"Iteration {iteration + 1}")
-            genlib_filename = generate_random_genlib(data, iteration)
-            script_filename, mapped_netlist = create_abc_script(converted_netlist_abc, genlib_filename)
-
-            if not run_abc_script(script_filename):
-                print(f"Skipping iteration {iteration + 1} due to abc script error")
-                continue
-
-            converted_netlist = convert_netlist_to_output_format(mapped_netlist)
-            if not converted_netlist:
-                print(f"Skipping iteration {iteration + 1} due to conversion error")
-                continue
-
-            current_cost = estimate_cost(converted_netlist, args.library, args.cost_function)
-            if current_cost is None:
-                print(f"Skipping iteration {iteration + 1} due to cost estimation error")
-                continue
-
-            print(f"Cost for iteration {iteration + 1}: {current_cost}")
-
-            if current_cost < best_cost:
-                best_cost = current_cost
-                os.rename(converted_netlist, best_netlist)
-                os.rename(genlib_filename, best_genlib)
-                print(f"\033[91mNew best netlist found: {best_netlist} with cost {best_cost} and genlib {best_genlib}\033[0m")
+        generate_genlib(data, best_solution)
 
         print(f"\033[92mBest netlist saved as {best_netlist} with cost {best_cost}\033[0m")
         print(f"\033[92mBest genlib saved as {best_genlib}\033[0m")
@@ -224,7 +234,6 @@ def main():
         elapsed_time = end_time - start_time
         print(f"Elapsed time: {elapsed_time:.2f} seconds")
         signal.alarm(0)  # Disable the alarm
-    
 
 if __name__ == "__main__":
     main()
