@@ -13,7 +13,7 @@ This project is a logic optimization program for the CAD contest Problem A. It i
 ```plaintext
 cada0036/
 ├── abc
-│   └──  abc                 # ABC executable file         # Library file example
+│   └──  abc                 # ABC executable file
 ├── release
 │   ├── genlib
 │   ├── net_complete
