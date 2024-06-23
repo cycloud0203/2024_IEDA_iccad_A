@@ -159,7 +159,7 @@ def main():
     with open(args.library, 'r') as f:
         data = json.load(f)
 
-    num_iterations = 1000
+    num_iterations = 500
     best_cost = float('inf')
     best_netlist = args.output 
 
