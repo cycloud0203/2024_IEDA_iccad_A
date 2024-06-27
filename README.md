@@ -29,6 +29,22 @@ There is no need to compile any file, but only need to execute the following com
 ```
 > [!WARNING]
 > The program is only executable on the amd64 Linux environment.
+If you're using wsl, please make your own executable files of abc tool and cada0036
+build your own abc:
+```
+git clone https://github.com/berkeley-abc/abc.git
+```
+```
+cd abc && make
+```
+build your own main:
+```
+cd script
+```
+```
+pyinstaller --onefile main.py
+```
+you will find the executable file in dist folder after using this command
 
 ## Reference
 
