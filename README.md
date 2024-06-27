@@ -32,14 +32,14 @@ There is no need to compile any file, but only need to execute the following com
 
 If you're using wsl, please make your own executable files of abc tool and cada0036
 
-build your own abc:
+Build your own abc executable file:
 ```
 git clone https://github.com/berkeley-abc/abc.git
 ```
 ```
 cd abc && make
 ```
-build your own main:
+Build your own main executable file:
 ```
 cd script
 ```
