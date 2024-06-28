@@ -47,7 +47,13 @@ cd script
 pyinstaller --onefile main.py
 ```
 you will find the executable file in dist folder after using this command
-
+```
+mv dist/main ../cada0036
+```
+```
+cd ..
+```
+you can now try if the cada0036 is executable
 ## Reference
 
 ### Berkeley ABC Tool
