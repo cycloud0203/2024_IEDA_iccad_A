@@ -19,6 +19,10 @@ cada0036/
 │   ├── net_complete
 │   ├── net_m
 │   ├── net_mapped
+├── script
+│   ├── main.py
+│   ├── convert_netlist_1.py
+│   ├── convert_netlist_2.py
 └── cada0036                 # Main executable file
 ```
 
