@@ -15,7 +15,7 @@ def timeout_handler(signum, frame):
     raise TimeoutError("The operation timed out")
 
 # Set the timeout limit (in seconds)
-TIMEOUT = 1000  # Set to 2.5 hours (9000 seconds)
+TIMEOUT = 10000  # Set to 2.5 hours (9000 seconds)
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='CAD Contest Optimizer')
@@ -138,7 +138,6 @@ def score_estimator(permutation):
     if not converted_netlist_abc:
         return 0
     
-    print("permu", permutation)
     genlib_filename = generate_genlib(data, permutation)
     script_filename, mapped_netlist = create_abc_script(converted_netlist_abc, genlib_filename)
 
