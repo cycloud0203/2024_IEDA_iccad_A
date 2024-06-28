@@ -30,7 +30,7 @@ There is no need to compile any file, but only need to execute the following com
 > [!WARNING]
 > The program is only executable on the amd64 Linux environment.
 
-If you're using wsl, you may encounter some error, please make your own executable files of abc tool and cada0036
+If you're using a different version of linux (wsl), you may encounter some error, please make your own executable files of abc tool and cada0036
 
 Build your own abc executable file:
 ```
