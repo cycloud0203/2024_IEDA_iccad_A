@@ -1,0 +1,26 @@
+
+    read release/net_m/design_m.v
+    strash
+    
+    balance
+    rewrite
+    rewrite -z
+    resub
+    refactor
+    balance
+    fraig
+    compress
+    b
+    resyn
+    resyn2
+    resyn3
+    dc2
+    compress2
+    dch
+    dc2
+    
+    read_library release/genlib/lib.genlib
+    map
+    
+    write_verilog release/net_mapped/netlist_mapped.v
+    

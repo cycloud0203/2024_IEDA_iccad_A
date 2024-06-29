@@ -1,0 +1,5 @@
+source -s abc.rc
+read ../release/net_mapped/netlist_mapped.v
+read ../release/net_m/design_m.v
+read /release/net_mapped/netlist_mapped.v
+read release/net_mapped/netlist_mapped.v
