@@ -35,20 +35,24 @@ cada0036/
 │   ├── genlib
 │   ├── net_complete
 │   ├── net_m
+│   │   └── design_m.v
 │   ├── net_mapped
+│   │   └── netlist_mapped.v
 │   ├── cost.txt
 │   └── optimize.abc         # ABC script file
-└── cada0036                 # Main executable file
+├── abc.rc
+├── readme.md
+└── cada0036_alpha           # Main executable file
 ```
 
 ## Execution Instructions
-The executable file `cada0036` runs the logic optimization program. Use the following command to execute the program:
+The executable file `cada0036_alpha` runs the logic optimization program. Use the following command to execute the program:
 ```bash
-./cada0036 -netlist <netlist_path/name.v> -library <lib_path/name.lib> -cost_function <cost_function_path/name> -output <output_path/name.v>
+./cada0036_alpha -netlist <netlist_path/name.v> -library <lib_path/name.lib> -cost_function <cost_function_path/name> -output <output_path/name.v>
 ```
 For example, to use `netlists/design1.v` as the input netlist, `lib/lib1.json` as the library file, `cost_estimators/cost_estimator_1` as the cost estimator, and output to `optimized_design.v`, use the following command:
 ```bash
-./cada0036 -netlist netlists/design1.v -library lib/lib1.json -cost_function cost_estimators/cost_estimator_1 -output optimized_design.v
+./cada0036_alpha -netlist netlists/design1.v -library lib/lib1.json -cost_function cost_estimators/cost_estimator_1 -output optimized_design.v
 ```
 ## Adding and Removing Files
 
@@ -86,9 +90,9 @@ For detailed information on CAD contest Problem A, refer to the official PDF doc
 [Q&A](https://drive.google.com/file/d/1QLy2-kzEKnf_39ukD7QWMizP2XJfKsdx/view?usp=sharing)
 ## Notice
 > [!NOTE]
-> Ensure that the `cada0036` file has executable permissions. If not, use the following command to add the permissions:
+> Ensure that the `cada0036_alpha` file has executable permissions. If not, use the following command to add the permissions:
 ```bash
-chmod +x cada0036
+chmod +x cada0036_alpha
 ```
 > [!NOTE]
 > Ensure that all files follow the format specified by the official guidelines to avoid any issues during execution and evaluation.
