@@ -3,11 +3,12 @@ import os
 import sys
 
 def parse_netlist(netlist):
-    inputs = re.findall(r'input\s+([\w\s,]+);', netlist)
-    outputs = re.findall(r'output\s+([\w\s,]+);', netlist)
-    wires = re.findall(r'wire\s+([\w\s,]+);', netlist)
+    inputs = re.findall(r'\binput\s+([\w\s,]+);', netlist)
+    outputs = re.findall(r'\boutput\s+([\w\s,]+);', netlist)
+    wires = re.findall(r'\bwire\s+([\w\s,]+);', netlist)
     
-    gates = re.findall(r'(\w+)\s+\w+\s*\(\s*([\w\s,]+)\s*\);', netlist)
+    # Updated regular expression to handle constants like 1'b1
+    gates = re.findall(r'(\w+)\s+\w+\s*\(\s*([^;]+)\s*\);', netlist)
     
     inputs = [i.strip() for i in ','.join(inputs).split(',')]
     outputs = [o.strip() for o in ','.join(outputs).split(',')]
@@ -53,7 +54,7 @@ def write_file(file_path, content):
         file.write(content)
 
 def extract_module_name(netlist):
-    match = re.search(r'module\s+(\w+)', netlist)
+    match = re.search(r'\bmodule\s+(\w+)', netlist)
     if match:
         return match.group(1)
     else:
@@ -96,7 +97,7 @@ def main(input_filename, output_filename):
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("Usage: python convert_netlist_1.py <input_netlist_path> <output_netlist_path>")
+        print("Usage: python convert_netlist.py <input_netlist_path> <output_netlist_path>")
     else:
         input_filename = sys.argv[1]
         output_filename = sys.argv[2]

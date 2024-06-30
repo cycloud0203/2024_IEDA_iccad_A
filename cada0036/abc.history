@@ -1,5 +1,18 @@
-source -s abc.rc
 read ../release/net_mapped/netlist_mapped.v
 read ../release/net_m/design_m.v
 read /release/net_mapped/netlist_mapped.v
 read release/net_mapped/netlist_mapped.v
+read ../toy_case_change.v
+read ..toy_case_change.v
+source -s abc.rc
+read toy_case_change.v
+strash
+fraig
+compress
+resyn
+resyn2
+resyn3
+compress2
+read best_genlib.genlib
+read_genlib best_genlib.genlib
+write test_map.v

@@ -30,8 +30,8 @@ def convert_verilog(lines):
     # Generate all possible gate names
     gates = []
     for gate in ['and', 'buf', 'nand', 'nor', 'not', 'or', 'xnor', 'xor']:
-        for i in range(1, 15):  # 14 is the maximum range based on buf and not gates
-            if (gate in ['buf', 'not'] and i <= 14) or (gate not in ['buf', 'not'] and i <= 8):
+        for i in range(1, 50):  # 14 is the maximum range based on buf and not gates
+            if (gate in ['buf', 'not'] and i <= 50) or (gate not in ['buf', 'not'] and i <= 50):
                 gates.append(f"{gate}_{i}")
     
     converted_lines = []
