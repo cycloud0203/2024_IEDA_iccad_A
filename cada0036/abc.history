@@ -16,3 +16,20 @@ compress2
 read best_genlib.genlib
 read_genlib best_genlib.genlib
 write test_map.v
+read net_m/design_m.v
+balance
+rewrite
+fraig -s
+source -s abc.rc
+read release/net_m/design_m.v
+strash
+resub
+refactor
+fraig
+compress
+resyn
+resyn2
+resyn3
+compress2
+deepsyn
+deepsync
