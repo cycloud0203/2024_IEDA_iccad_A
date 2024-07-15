@@ -46,6 +46,8 @@ cada0036/
 ```
 
 ## Execution Instructions
+> [!WARNING]
+> The program is only executable on the amd64 Linux environment.
 The executable file `cada0036_alpha` runs the logic optimization program. Use the following command to execute the program:
 ```bash
 ./cada0036_alpha -netlist <netlist_path/name.v> -library <lib_path/name.lib> -cost_function <cost_function_path/name> -output <output_path/name.v>
