@@ -341,71 +341,6 @@ def estimate_cost(netlist_filename, library_path, cost_function):
     print("cost: ",cost)
     return cost
 
-
-# def main():
-#     # Record the start time
-#     start_time = time.time()
-    
-#     # Set the timeout signal
-#     signal.signal(signal.SIGALRM, timeout_handler)
-#     signal.alarm(TIMEOUT)
-
-
-#     try:
-#         args = parse_arguments()
-
-#         with open(args.library, 'r') as f:
-#             data = json.load(f)
-
-#         num_iterations = 150
-        
-#         best_cost = float('inf')
-#         best_netlist = args.output
-#         best_genlib = 'best_genlib.genlib'
-
-#         converted_netlist_abc = convert_netlist_to_abc_format(args.netlist)
-#         if not converted_netlist_abc:
-#             print("Failed to convert netlist to ABC format")
-#             return
-
-#         for iteration in range(num_iterations):
-#             print(f"Iteration {iteration + 1}")
-#             genlib_filename = generate_random_genlib(data, iteration)
-#             script_filename, mapped_netlist = create_abc_script(converted_netlist_abc, genlib_filename)
-
-#             if not run_abc_script(script_filename):
-#                 print(f"Skipping iteration {iteration + 1} due to abc script error")
-#                 continue
-
-#             converted_netlist = convert_netlist_to_output_format(mapped_netlist)
-#             if not converted_netlist:
-#                 print(f"Skipping iteration {iteration + 1} due to conversion error")
-#                 continue
-
-#             current_cost = estimate_cost(converted_netlist, args.library, args.cost_function)
-#             if current_cost is None:
-#                 print(f"Skipping iteration {iteration + 1} due to cost estimation error")
-#                 continue
-
-#             print(f"Cost for iteration {iteration + 1}: {current_cost}")
-
-#             if current_cost < best_cost:
-#                 best_cost = current_cost
-#                 os.rename(converted_netlist, best_netlist)
-#                 os.rename(genlib_filename, best_genlib)
-#                 print(f"\033[91mNew best netlist found: {best_netlist} with cost {best_cost} and genlib {best_genlib}\033[0m")
-
-#         print(f"\033[92mBest netlist saved as {best_netlist} with cost {best_cost}\033[0m")
-#         print(f"\033[92mBest genlib saved as {best_genlib}\033[0m")
-        
-#     except TimeoutError as e:
-#         print(str(e))
-#     finally:
-#         # Record the end time and calculate the elapsed time
-#         end_time = time.time()
-#         elapsed_time = end_time - start_time
-#         print(f"Elapsed time: {elapsed_time:.2f} seconds")
-#         signal.alarm(0)  # Disable the alarm
     
 def main():
     args = parse_arguments()
@@ -428,5 +363,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-    
