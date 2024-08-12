@@ -33,3 +33,20 @@ resyn3
 compress2
 deepsyn
 deepsync
+source -s abc.rc
+help
+write -h
+write_aiger -h
+map -h
+map -d
+read release/optimized.aig
+strash
+&deepsyn
+choice -h
+fpga
+&fpga
+chouce
+choice
+compress
+compress2
+balance

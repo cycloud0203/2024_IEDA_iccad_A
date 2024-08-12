@@ -204,62 +204,7 @@ def generate_genlib(data, permutation):
 
     return genlib_filename
 
-def generate_random_genlib(data, iteration):
-    attributes = data['information']['attributes']
-    num_attributes = len(attributes) - 2
-    num_required_attributes = 7
 
-    genlib_filename = 'release/genlib/lib.genlib'
-    permutation = list(range(num_attributes))
-    while True:
-        random.shuffle(permutation)
-        permutation_tuple = tuple(permutation)
-        if permutation_tuple not in used_permutations:
-            used_combinations.add(permutation_tuple)
-            break
-
-    with open(genlib_filename, 'w') as genlib_file:
-        for cell in data['cells']:
-            cell_name = cell['cell_name']
-            cell_type = cell['cell_type']
-
-
-            cell_attributes = [float(cell[attr]) for attr in attributes if attr not in ['cell_name', 'cell_type']]
-            while len(cell_attributes) < num_required_attributes:
-                cell_attributes.append(0)
-
-            area = cell_attributes[permutation[0]]
-            rise_block_delay = cell_attributes[permutation[1]]
-            fall_block_delay = cell_attributes[permutation[2]]
-            rise_fanout_delay = cell_attributes[permutation[3]]
-            fall_fanout_delay = cell_attributes[permutation[4]]
-            input_load = cell_attributes[permutation[5]]
-            max_load = cell_attributes[permutation[6]]
-
-
-            if cell_type == "and":
-                function = "Y=A*B"
-            elif cell_type == "or":
-                function = "Y=A+B"
-            elif cell_type == "xor":
-                function = "Y=A*!B+!A*B"
-            elif cell_type == "nand":
-                function = "Y=!(A*B)"
-            elif cell_type == "nor":
-                function = "Y=!(A+B)"
-            elif cell_type == "not":
-                function = "Y=!A"
-            elif cell_type == "buf":
-                function = "Y=A"
-            elif cell_type == "xnor":
-                function = "Y=!(A^B)"
-            else:
-                continue
-
-            genlib_file.write(f"GATE {cell_name} {area} {function};\n")
-            genlib_file.write(f"    PIN * NONINV {input_load} {max_load} {rise_block_delay} {rise_fanout_delay} {fall_block_delay} {fall_fanout_delay}\n")
-
-    return genlib_filename
 
 def create_abc_script(inputfile, genlib_filename):
     netlist_input = inputfile
@@ -284,6 +229,7 @@ def create_abc_script(inputfile, genlib_filename):
     compress2
     dch
     dc2
+    ps
     
     read_library {genlib_filename}
     map

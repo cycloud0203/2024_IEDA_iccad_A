@@ -1,6 +1,6 @@
 FROM --platform=linux/amd64 ubuntu:20.04
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y nano\
     python3 \
     python3-pip \
     python3-venv \
@@ -23,5 +23,3 @@ RUN chmod +x /app/cost_estimators/*
 ENV PYTHONUNBUFFERED=1
 
 RUN ./cost_estimators/cost_estimator_1 -library lib/lib1.json -netlist release/net_complete/converted_design.v -output release/cost.txt || true
-
-CMD ["/app/venv/bin/python", "scripts/main.py", "-netlist", "netlists/design1.v", "-library", "lib/lib1.json", "-cost_function", "cost_estimators/cost_estimator_1", "-output", "optimized_design.v"]
