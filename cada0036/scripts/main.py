@@ -303,6 +303,7 @@ def main():
     genlib_file = generate_genlib(data, best_permutation)
     converted_netlist_abc = convert_netlist_to_abc_format(args.netlist)
     script_filename, mapped_netlist = create_abc_script(converted_netlist_abc, genlib_file)
+    run_abc_script(script_filename)
     converted_netlist = convert_netlist_to_output_format(mapped_netlist)
     os.rename(converted_netlist, best_netlist)
     os.rename(genlib_file, best_genlib)
